@@ -19,7 +19,7 @@ def solar_year(country,year):
     cutout = atlite.Cutout(name, module='era5', bounds=bounds, time=slice(str(year)+'-01-01',str(year+1)+'-01-01'))
     CORINE = 'corine.tif'
     excluder = ExclusionContainer()
-    incluir = [40,39,35,34]
+    incluir = water
     excluder.add_raster(CORINE, codes=incluir,invert=True)
     pais = shapes.loc[[country]].geometry.to_crs(excluder.crs)
     masked, transform = shape_availability(pais, excluder)
