@@ -13,6 +13,7 @@ paises = ["Spain","Germany"]
 years = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017]
 
 def solar_year(country,year):
+    os.chdir('/home/roberto/Documents/Titulación/Archivos')
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
     shapes = world[world.name.isin(countries)].set_index('name')
@@ -37,6 +38,7 @@ def solar_year(country,year):
     return(pv)
 
 def eligible_area(country,includer):
+    os.chdir('/home/roberto/Documents/Titulación/Archivos')
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
     shapes = world[world.name.isin(countries)].set_index('name')
@@ -53,4 +55,4 @@ def eligible_area(country,includer):
     ax = show(masked, transform=transform, cmap='Greens', ax=ax)
     pais.plot(ax=ax, edgecolor='k', color='None')
     cutout.grid.to_crs(excluder.crs).plot(edgecolor='grey', color='None', ax=ax, ls=':')
-    ax.set_title(f'Eligible area (green) {eligible_share * 100:2.2f}%');
+    ax.set_title(f'{country}\nEligible area (green) {eligible_share * 100:2.2f}%');
