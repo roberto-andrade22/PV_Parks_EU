@@ -35,7 +35,8 @@ def solar_year(country,year):
     cutout.prepare()
     pv = cutout.pv(matrix=capacity_matrix, panel=atlite.solarpanels.CSi, 
                 orientation='latitude_optimal', index=shapes.index)
-    return(pv)
+    pv.to_pandas().to_csv('Output/'+country+str(year)+'.csv')
+    #return(pv)
 
 def eligible_area(country,includer):
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
