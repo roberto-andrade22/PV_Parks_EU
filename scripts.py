@@ -9,6 +9,8 @@ os.chdir('/home/roberto/Documents/Titulación/Archivos')
 
 
 water = [40,39,35,34]
+paises = ["Spain","Germany"]
+years = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017]
 
 def solar_year(country,year):
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
