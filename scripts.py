@@ -13,6 +13,7 @@ paises = ["Spain","Germany"]
 years = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017]
 
 def solar_year(country,year):
+    cadmio = atlite.solarpanels.CdTe
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
@@ -33,7 +34,7 @@ def solar_year(country,year):
     area = xr.DataArray(area, dims=('spatial'))
     capacity_matrix = A.stack(spatial=['y', 'x']) * area * cap_per_sqkm
     cutout.prepare()
-    pv = cutout.pv(matrix=capacity_matrix, panel=atlite.solarpanels.CSi, 
+    pv = cutout.pv(matrix=capacity_matrix, panel=cadmio, 
                 orientation='latitude_optimal', index=shapes.index)
     pv.to_pandas().to_csv('Output/'+country+str(year)+'.csv')
     #return(pv)
