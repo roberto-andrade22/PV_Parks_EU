@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from rasterio.plot import show
 from atlite.gis import shape_availability, ExclusionContainer
 import os
+import calendar
+import pandas as pd
+import numpy as np
+import datetime as dt
 os.chdir('/home/roberto/Documents/Titulación/Archivos')
 
 
