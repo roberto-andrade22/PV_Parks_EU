@@ -9,6 +9,7 @@ import calendar
 import pandas as pd
 import numpy as np
 import datetime as dt
+import scipy.stats as stats
 os.chdir('/home/roberto/Documents/Titulación/Archivos')
 
 
