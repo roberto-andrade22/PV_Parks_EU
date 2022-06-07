@@ -259,10 +259,29 @@ def ventas_spain():
     mes_espana.drop(index='Total',inplace=True)
     spain['Produccion [GWh]']=mes_espana['Mean [GW]']
     spain['Ventas (Euros)']=spain['Precios (Euros/MWh)']*1000*spain['Produccion [GWh]']
-    spain['Ventas (Euros)']=np.round(spain['Ventas (Euros)'],2)
+    anuales = spain['Ventas (Euros)'].sum()
     spain['Precios (Euros/MWh)']= spain['Precios (Euros/MWh)'].apply(lambda x: "€{:,.2f}".format(x))
+    spain.loc['Annual']=['','',anuales]
+    spain['Ventas (Euros)']=np.round(spain['Ventas (Euros)'],2)
     spain['Ventas (Euros)']= spain['Ventas (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
     return(spain)
+
+## Regresa DataFrame con las ventas por cada mes de Alemania
+def ventas_germany():
+    mes_alemania = produccion_por_mes('Germany')
+    prices_germany = {'January': 49.39,'February':42.82,'March':30.63,'April':39.96,
+                'May':37.84,'June':32.52,'July':39.69,'August':36.85,'September':35.75,'October':36.94,'November':41,'December':31.97}
+    mes_alemania.drop(index='Total',inplace=True)
+    precios = pd.DataFrame.from_dict(prices_germany,orient='index')
+    precios.rename(columns={0:'Precios (Euros/MWh)'},inplace=True)
+    precios['Produccion [GWh]']= mes_alemania['Mean [GW]']
+    precios['Ventas (Euros)']=precios['Precios (Euros/MWh)']*1000*precios['Produccion [GWh]']
+    anuales = precios['Ventas (Euros)'].sum()
+    precios['Precios (Euros/MWh)']= precios['Precios (Euros/MWh)'].apply(lambda x: "€{:,.2f}".format(x))
+    precios.loc['Annual']=['','',anuales]
+    precios['Ventas (Euros)']=np.round(precios['Ventas (Euros)'],2)
+    precios['Ventas (Euros)']= precios['Ventas (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
+    return(precios)
 
 ## Genera DataFrame con índice de las horas del día y columnas con algunas estadísticas de un mes y un país. (Perc. 0.75, median, perc. 0.25)
 def Por_mes(Pais,Mes):
