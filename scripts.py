@@ -89,13 +89,6 @@ def area_elegible(country, includer):
     cutout.grid.plot(ax=ax, color='None', edgecolor='grey', ls=':')
     ax.set_title(f'{country}\nEligible area (green) {eligible_share * 100:2.2f}%');
 
-## Ejecuta la simulación (Cuidado con número de procesadores)
-def correr_simulacion():
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
-    import multiprocessing
-    from joblib import delayed, Parallel
-    Parallel(n_jobs=multiprocessing.cpu_count()-1)(delayed(solar_year)(country,year) for country in paises for year in years)
-
 ## Une csv de la simulación
 def unificar():
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
@@ -113,6 +106,13 @@ def unificar():
     df.to_csv('Output/Combinado.csv')
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
 
+## Ejecuta la simulación (Cuidado con número de procesadores)
+def correr_simulacion():
+    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    import multiprocessing
+    from joblib import delayed, Parallel
+    Parallel(n_jobs=multiprocessing.cpu_count()-1)(delayed(solar_year)(country,year) for country in paises for year in years)
+    unificar()
 
 ## Lee csv único de la simulación. Regresa DF
 def leer():
