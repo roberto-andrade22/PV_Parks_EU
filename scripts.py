@@ -349,3 +349,9 @@ def cuatrimestre(num_cuatrimestre,num_primer_mes,country):
     plt.ylim(bottom = 0,top = max)
     
     plt.show()
+
+## Llama a cuatrimestre
+def graficas_cuatrimestre(country):
+    cuatrimestre(1,1,country)
+    cuatrimestre(2,5,country)
+    cuatrimestre(3,9,country)
