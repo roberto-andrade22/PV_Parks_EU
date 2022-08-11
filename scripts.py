@@ -18,6 +18,36 @@ dump = [7]
 paises = ["Spain","Germany"]
 years = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017]
 
+## Simulación un día (Silicón, terreno dump)
+def solar_one_day(country,year,month,day):
+    cadmio = atlite.solarpanels.CSi
+    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    countries = [country]
+    shapes = world[world.name.isin(countries)].set_index('name')
+    bounds = shapes.unary_union.buffer(1).bounds
+    name = country+'('+str(year)+' - ' +str(month)+' - '+str(day)+").nc"
+    cutout = atlite.Cutout(name, module='era5', bounds=bounds, time=slice(str(year)+'-01-01',str(year)+'-01-01'))
+    CORINE = 'corine.tif'
+    excluder = ExclusionContainer()
+    incluir = dump
+    excluder.add_raster(CORINE, codes=incluir,invert=True)
+    pais = shapes.loc[[country]].geometry.to_crs(excluder.crs)
+    masked, transform = shape_availability(pais, excluder)
+    eligible_share = masked.sum() * excluder.res**2 / pais.geometry.item().area
+    A = cutout.availabilitymatrix(shapes, excluder)
+    cap_per_sqkm = 1.7
+    area = cutout.grid.set_index(['y', 'x']).to_crs(3035).area / 1e6
+    area = xr.DataArray(area, dims=('spatial'))
+    capacity_matrix = A.stack(spatial=['y', 'x']) * area * cap_per_sqkm
+    cutout.prepare()
+    pv = cutout.pv(matrix=capacity_matrix, panel=cadmio, 
+                orientation='latitude_optimal', index=shapes.index)
+    df = pv.to_pandas()
+    df.rename(columns={country:country+'[MWh]'},inplace=True)
+    return(df)
+
+
 ## Simulación (Paneles Silicón convencional)
 def solar_year(country,year):
     cadmio = atlite.solarpanels.CSi
