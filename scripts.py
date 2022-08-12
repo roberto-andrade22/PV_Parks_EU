@@ -27,7 +27,7 @@ def solar_one_day(country,year,month,day):
     shapes = world[world.name.isin(countries)].set_index('name')
     bounds = shapes.unary_union.buffer(1).bounds
     name = country+'('+str(year)+' - ' +str(month)+' - '+str(day)+").nc"
-    cutout = atlite.Cutout(name, module='era5', bounds=bounds, time=slice(str(year)+'-01-01',str(year)+'-01-01'))
+    cutout = atlite.Cutout(name, module='era5', bounds=bounds, time=slice(str(year)+'-'+str(month)+'-'+str(day),str(year)+'-'+str(month)+'-'+str(day)))
     CORINE = 'corine.tif'
     excluder = ExclusionContainer()
     incluir = dump
@@ -91,7 +91,7 @@ def eligible_area(country,includer):
     masked, transform = shape_availability(pais, excluder)
     eligible_share = masked.sum() * excluder.res**2 / pais.geometry.item().area
     fig, ax = plt.subplots(figsize=(15,10))
-    ax = show(masked, transform=transform, cmap='inferno_r', ax=ax)
+    ax = show(masked, transform=transform, cmap='Greens', ax=ax)
     pais.plot(ax=ax, edgecolor='k',color='None')
     cutout.grid.to_crs(excluder.crs).plot(edgecolor='grey', color='None', ax=ax, ls=':')
     ax.set_title(f'{country}\nEligible area (green) {eligible_share * 100:2.2f}%');
