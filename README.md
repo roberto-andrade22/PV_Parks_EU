@@ -1,12 +1,18 @@
-# 
-
-**PANELES SOLARES FLOTANTES COMO OPORTUNIDAD DE NEGOCIOS: SIMULACIÓN EN ESPAÑA Y ALEMANIA COMO CASOS REPRESENTATIVOS DE MÉXICO**
+#PV Parks in *dump* designated territories: A business opportunity
 
 Roberto Andrade Martínez
 
-**RESUMEN**
+**Summary**
 
-A la luz de la creciente demanda de energía eléctrica a nivel nacional y global se realizó una simulación en el lenguaje de programación Python (v. 3.8) utilizando la librería [Atlite](https://atlite.readthedocs.io/en/latest/), desarrollada por PyPSA (Python for Power System Analysis), con el objetivo de demostrar la factibilidad tanto de potencial energético como de negocios de instalar paneles solares flotantes en México. 
-El ejercicio consistió en la recopilación de datos de [Copernicus](https://www.copernicus.eu/en) –el programa de observación de la Tierra de la Unión Europea– de los años 2008 a 2017 para dos paises: Alemania y España. Estos datos fueron acotados a aquellos que se encontraban en espacios geográficos cuya denominación de uso de suelo era acuática, para posteriormente insertarse en el modelo de Atlite; éste dió como resultado el potencial energético (en Gigawatts) por cada hora durante los 10 años considerados, en una serie de tiempo.
+In light of the rising demand for electricity on a global scale, as well as the need for it to come from non-fossil sources to avoid carbon emissions as much as possible, one alternative to look at is renewable energy and, in particular, solar from photovoltaic panels.
 
-Con base en estos resultados se muestra la estabilidad en la potencial producción de electricidad con paneles solares flotantes en un año cualquiera y finalmente se hace una apología del uso de esta energía renovable como un nicho de mercado para México.
+Given the space constraints to install a consdierable capacity in most urban areas, one out of the box possibility is to look at land that has already been used for something else: like residual water plants, landfills, among others.
+
+This project downloaded climate data from [Copernicus](https://www.copernicus.eu/en) --the European Union's Earth observatory-- for two very different countries regarding their amount of sunlight: Spain and Germany, for a period of ten years.
+
+Processing that data using Python, and in particular the library [Atlite](https://atlite.readthedocs.io/en/latest/), it is possible to obtain the PV potential if installing panels on land with a certain designation, such as *dump*, for every hour of the period of interest.
+
+This project's objective is to 
+
+- Demonstrate that such output is big enough to be financially viable and succesful
+- That the output will be consistent from year to year, in order to guarantee both the aformentioned financial aspect as well as the strategic perspective for, let's say, a government who would like to invest in it to add around 1 TWh per year of energy to its grid.
