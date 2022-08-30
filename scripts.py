@@ -122,7 +122,7 @@ def unite():
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
     todo = {}
     for year in years:
-        for country in paises:
+        for country in countries:
             todo[country+str(year)]=pd.read_csv('Output/'+country+str(year)+'.csv',parse_dates=[0])
             todo[country+str(year)].set_index('time',inplace=True)
             todo[country+str(year)]=todo[country+str(year)]/1000            ## Converts to GW
