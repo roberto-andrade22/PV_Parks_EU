@@ -156,114 +156,75 @@ def read_single_csv():
 
 ## Analyzing the output
 
-## Grafica tres días aleatorios
-def tres_random(pais):
-    df = leer()
+## Plot three random consecutive days of output for one country. 
+## Displays one color for each year of the ten available in our output
+def three_random(country):
+    df = read_single_csv()
     df['doy'] = df.index.dayofyear
-    df['tiempo']=df.index.time
+    df['time']=df.index.time
     df['Year'] = df.index.year
-    df['ind']= df['doy'].astype(str)+"-"+ df['tiempo'].astype(str)
+    df['ind']= df['doy'].astype(str)+"-"+ df['time'].astype(str)
     df['ind']=pd.to_datetime(df['ind'],format='%j-%H:%M:%S')
-    piv = pd.pivot_table(df, index=['ind'],columns=['Year'], values=[pais])
+    piv = pd.pivot_table(df, index=['ind'],columns=['Year'], values=[country])
     piv = piv[(piv.index <'1901-01-01')]
-    mes = np.random.choice(list(piv.index.month.unique()))
-    aux = piv[piv.index.month==mes]
+    month_numeric = np.random.choice(list(piv.index.month.unique()))
+    aux = piv[piv.index.month==month_numeric]
     split = np.array_split(aux,10)
     x = np.random.choice(range(10))
-    titulo = pais+"\n"+ str(calendar.month_name[mes])
-    split[x].plot(title = titulo,figsize=(20,7),xlabel = 'Date',ylabel='Solar Power [GW]', ls='--')
-    plt.legend(title = "País:")
+    plot_name = country+"\n"+ str(calendar.month_name[month_numeric])
+    split[x].plot(title = plot_name,figsize=(20,7),xlabel = 'Date',ylabel='Solar Power [GW]', ls='--')
+    plt.legend(title = "Country:")
     plt.show()
     plt.close()
 
-## Generación anual por país. Regresa DF
-def anual_country(pais):
-    df = leer()
-    pais_1 = df[pais]
+## Returns a DataFrame with the total PV production for each year for one country
+def anual_country(country):
+    df = read_single_csv()
+    pais_1 = df[country]
     total = {}
     for year in years:
         total[str(year)] = pais_1.loc[str(year)].sum()
-    sumas = pd.DataFrame.from_dict(total,orient='index')
-    titulo  = 'GWh ' + pais
-    sumas.rename(columns={0:titulo},inplace=True)
-    return(sumas)
+    sums = pd.DataFrame.from_dict(total,orient='index')
+    title  = 'GWh ' + country
+    sums.rename(columns={0:title},inplace=True)
+    return(sums)
 
-## Regresa la producción total de un mes para cada año en un país (Regresa diccionario)
-def suma_mes(country,mes):
-    prueba = leer()
-    prueba['Month']=prueba.index.month
-    prueba['Year']=prueba.index.year
-    month_of_interest = prueba.loc[prueba['Month']==mes]
-    sumas = {}
+## Returns the total production for each year for one country and one specific month (Dictionary)
+def sum_month(country,month): ## Insert month as integer
+    auxiliar = read_single_csv()
+    auxiliar['Month']=auxiliar.index.month
+    auxiliar['Year']=auxiliar.index.year
+    month_of_interest = auxiliar.loc[auxiliar['Month']==month]
+    sums = {}
     for year in years:
-        sumas[year] = month_of_interest.loc[month_of_interest['Year']==year][country].sum()
-    return(sumas)
+        sums[year] = month_of_interest.loc[month_of_interest['Year']==year][country].sum()
+    return(sums)
 
-## Diagrama de caja y brazos para un país.
-def graficas_bienestar(country):
-    diccionario = {}
+## Boxplot yearly production for each month for one country
+def box_plots_monthly(country):
+    dictionary = {}
     for i in range(1,13):
-        suma = suma_mes(country,i)
+        suma = sum_month(country,i)
         aux = []
         for value in suma.values():
             aux.append(value)
-        diccionario[i]=aux
-    prod_tot_mes=pd.DataFrame.from_dict(diccionario)
-    prod_tot_mes['Year']=years
-    prod_tot_mes.set_index('Year',inplace=True)
+        dictionary[i]=aux
+    prod_tot_month = pd.DataFrame.from_dict(dictionary)
+    prod_tot_month['Year']=years
+    prod_tot_month.set_index('Year',inplace=True)
     months = {1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
-    prod_tot_mes.rename(columns= months,inplace=True)
+    prod_tot_month.rename(columns= months,inplace=True)
     plt.figure(figsize=(15,8))
-    plt.boxplot(prod_tot_mes,labels=list(prod_tot_mes.columns))
+    plt.boxplot(prod_tot_month,labels=list(prod_tot_month.columns))
     plt.grid('True')
     plt.ylabel('Production [GWh]')
     plt.title(country)
-    plt.ylim(0,max(prod_tot_mes.max()))
+    plt.ylim(0,max(prod_tot_month.max()))
     plt.show()
 
-## Producción por mes. Regresa la media y su estimación con intervalos de confianza al 95% (DataFrame)
-def produccion_por_mes(country):
-    indices =[]
-    lows = []
-    highs = []
-    means = []
-    stds = []
+###############################################################################
 
-    anual = anual_country(country)
-    mean = np.round(np.mean(anual),6)[0]
-    std = np.round(np.std(anual),6)[0]
-    anual = (anual,)
-    intervalo_std = stats.bootstrap(anual,np.mean,confidence_level=0.95)
-    indice = 'Total'
-    low =np.round(intervalo_std.confidence_interval.low,6)[0]
-    high = np.round(intervalo_std.confidence_interval.high,6)[0]
-    indices.append(indice)
-    lows.append(low)
-    highs.append(high)
-    means.append(mean)
-    stds.append(std)
-
-    for mes in range(1,13):
-        suma = suma_mes(country,mes)
-        aux = []
-        for value in suma.values():
-            aux.append(value)
-        mean = np.mean(aux)
-        std = np.std(aux)
-        aux = (aux,)
-        intervalo_std = stats.bootstrap(aux,np.mean,confidence_level=0.95)
-        indice = calendar.month_name[mes]
-        low =intervalo_std.confidence_interval.low
-        high = intervalo_std.confidence_interval.high
-        indices.append(indice)
-        lows.append(low)
-        highs.append(high)
-        means.append(mean)
-        stds.append(std)
-    
-    df = pd.DataFrame({country:indices,'Low [GW]':lows,'Mean [GW]':means,'High [GW]':highs,'Std [GW]':stds})
-    df.set_index(country,inplace=True)
-    return(df)
+## Extracting the economic value of the production (prices)
 
 ## Lee archivos de precios de generación por cada mes. Se debe llamar desde ventas_spain()
 def precios_spain():
