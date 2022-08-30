@@ -200,6 +200,15 @@ def sum_month(country,month): ## Insert month as integer
         sums[year] = month_of_interest.loc[month_of_interest['Year']==year][country].sum()
     return(sums)
 
+def monthly_average(country):
+    df = read_single_csv()
+    df['Month'] = df.index.month
+    monthly = []
+    for month in range(1,13):
+        monthly.append(df.loc[df['Month']==month].sum()[country])
+    monthly = [i/10 for i in monthly]
+    return(monthly)
+
 ## Boxplot yearly production for each month for one country
 def box_plots_monthly(country):
     dictionary = {}
@@ -226,143 +235,49 @@ def box_plots_monthly(country):
 
 ## Extracting the economic value of the production (prices)
 
-## Lee archivos de precios de generación por cada mes. Se debe llamar desde ventas_spain()
-def precios_spain():
+## Reads the files with Spain's monthly prices (2020). Will be called from the method sales_spain()
+def prices_spain():
     os.chdir('/home/roberto/Documents/Titulación/Precios España')
     files = ['PFMMESES_CUR_20200101_20200131.xls','PFMMESES_CUR_20200201_20200229.xls','PFMMESES_CUR_20200301_20200331.xls','PFMMESES_CUR_20200401_20200430.xls',
             'PFMMESES_CUR_20200501_20200531.xls','PFMMESES_CUR_20200601_20200630.xls','PFMMESES_CUR_20200701_20200731.xls','PFMMESES_CUR_20200801_20200831.xls',
             'PFMMESES_CUR_20200901_20200930.xls','PFMMESES_CUR_20201001_20201031.xls','PFMMESES_CUR_20201101_20201130.xls','PFMMESES_CUR_20201201_20201231.xls']
-    precios = {}
+    prices = {}
     aux = 1
     for i in files:
-        precios[aux] = pd.read_excel(i,header=3)['Total\n€/MWh'][0]
+        prices[aux] = pd.read_excel(i,header=3)['Total\n€/MWh'][0]
         aux = aux+1
-    precios = pd.DataFrame.from_dict(precios,orient='index')
+    prices = pd.DataFrame.from_dict(prices,orient='index')
 
     months = {1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
-    precios.rename(index = months,inplace=True,columns={0:'Precios (Euros/MWh)'})
+    prices.rename(index = months,inplace=True,columns={0:'Prices (Euros/MWh)'})
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
-    return(precios)
+    return(prices)
 
-## Regresa DataFrame con las ventas por cada mes de España
-def ventas_spain():
-    mes_espana = produccion_por_mes('Spain')
-    spain = precios_spain()
-    mes_espana.drop(index='Total',inplace=True)
-    spain['Produccion [GWh]']=mes_espana['Mean [GW]']
-    spain['Ventas (Euros)']=spain['Precios (Euros/MWh)']*1000*spain['Produccion [GWh]']
-    anuales = spain['Ventas (Euros)'].sum()
-    spain['Precios (Euros/MWh)']= spain['Precios (Euros/MWh)'].apply(lambda x: "€{:,.2f}".format(x))
+## Returns DataFrame with expected sales in Spain by month. It considers the mean production for each month times the mean prices for 2020.
+def sales_spain():
+    month_spain = monthly_average('Spain')
+    spain = prices_spain()
+    spain['Production [GWh]']=month_spain
+    spain['Sales (Euros)']=spain['Prices (Euros/MWh)']*1000*spain['Production [GWh]']
+    anuales = spain['Sales (Euros)'].sum()
+    spain['Prices (Euros/MWh)']= spain['Prices (Euros/MWh)'].apply(lambda x: "€{:,.2f}".format(x))
     spain.loc['Annual']=['','',anuales]
-    spain['Ventas (Euros)']=np.round(spain['Ventas (Euros)'],2)
-    spain['Ventas (Euros)']= spain['Ventas (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
+    spain['Sales (Euros)']=np.round(spain['Sales (Euros)'],2)
+    spain['Sales (Euros)']= spain['Sales (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
     return(spain)
 
-## Regresa DataFrame con las ventas por cada mes de Alemania
-def ventas_germany():
-    mes_alemania = produccion_por_mes('Germany')
+## Returns DataFrame with expected sales in Germany by month. It considers the mean production for each month times the mean prices for 2020.
+def sales_germany():
+    month_germany = monthly_average('Germany')
     prices_germany = {'January': 49.39,'February':42.82,'March':30.63,'April':39.96,
                 'May':37.84,'June':32.52,'July':39.69,'August':36.85,'September':35.75,'October':36.94,'November':41,'December':31.97}
-    mes_alemania.drop(index='Total',inplace=True)
-    precios = pd.DataFrame.from_dict(prices_germany,orient='index')
-    precios.rename(columns={0:'Precios (Euros/MWh)'},inplace=True)
-    precios['Produccion [GWh]']= mes_alemania['Mean [GW]']
-    precios['Ventas (Euros)']=precios['Precios (Euros/MWh)']*1000*precios['Produccion [GWh]']
-    anuales = precios['Ventas (Euros)'].sum()
-    precios['Precios (Euros/MWh)']= precios['Precios (Euros/MWh)'].apply(lambda x: "€{:,.2f}".format(x))
-    precios.loc['Annual']=['','',anuales]
-    precios['Ventas (Euros)']=np.round(precios['Ventas (Euros)'],2)
-    precios['Ventas (Euros)']= precios['Ventas (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
-    return(precios)
-
-## Genera DataFrame con índice de las horas del día y columnas con algunas estadísticas de un mes y un país. (Perc. 0.75, median, perc. 0.25)
-def Por_mes(Pais,Mes):
-    df = leer()
-    df['Month']=df.index.month
-    df['Time']=df.index.time
-    Country = df[[Pais,'Month','Time']]
-    mes = Country.loc[Country['Month']== Mes]
-    aux = mes.groupby('Time')
-    hora =aux[Pais].agg([np.median, lambda x: np.quantile(x,0.75),lambda x: np.quantile(x,0.25)])
-    hora.rename(columns={'<lambda_0>':'Perc. 0.75','<lambda_1>':'Perc. 0.25'},inplace=True)
-    return(hora)
-
-## Gráficas por cuatrimestre. Perc.0.75, median y perc. 0.25
-def cuatrimestre(num_cuatrimestre,num_primer_mes,country):
-    import calendar
-    df = leer()
-    max = df[country].max()
-    titulo_sup =country+"\n"+str(num_primer_mes)+" - "+str(num_primer_mes+3)
-    plt.figure(figsize=(60,35))
-    plt.suptitle(titulo_sup,fontsize=50)
-
-    plt.subplot(2,2,1)
-
-    month_1 = Por_mes(country,num_primer_mes)
-
-    x_axis = month_1.index.astype(str)
-
-    plt.plot(x_axis,month_1['Perc. 0.75'],ls='dashdot',label="Perc. 0.75")
-    plt.plot(x_axis,month_1['median'],ls='solid',label="Median")
-    plt.plot(x_axis,month_1['Perc. 0.25'],ls='dashed',label="Perc. 0.25")
-    titulo = str(calendar.month_name[num_primer_mes])
-    plt.title(titulo,fontsize = 35)
-    plt.legend(loc='upper left',fontsize='xx-large')
-    plt.ylabel('Solar Power [GW]',fontsize = 35)
-    plt.xlabel('Hour of day',fontsize=35)
-    plt.tick_params(axis='y',labelsize=25)
-    plt.minorticks_off()
-    plt.ylim(bottom = 0,top = max)
-
-    plt.subplot(2,2,2)
-
-    month_2 = Por_mes(country,num_primer_mes+1)
-    plt.plot(x_axis,month_2['Perc. 0.75'],ls='dashdot',label="Perc. 0.75")
-    plt.plot(x_axis,month_2['median'],ls='solid',label="Median")
-    plt.plot(x_axis,month_2['Perc. 0.25'],ls='dashed',label="Perc. 0.25")
-    titulo = str(calendar.month_name[num_primer_mes+1])
-    plt.title(titulo,fontsize = 35)
-    plt.legend(loc='upper left',fontsize='xx-large')
-    plt.ylabel('Solar Power [GW]',fontsize = 35)
-    plt.tick_params(axis='y',labelsize=25)
-    plt.xlabel('Hour of day',fontsize=35)
-    plt.minorticks_off()
-    plt.ylim(bottom = 0,top = max)
-
-    plt.subplot(2,2,3)
-
-    month_3 = Por_mes(country,num_primer_mes+2)
-    plt.plot(x_axis,month_3['Perc. 0.75'],ls='dashdot',label="Perc. 0.75")
-    plt.plot(x_axis,month_3['median'],ls='solid',label="Median")
-    plt.plot(x_axis,month_3['Perc. 0.25'],ls='dashed',label="Perc. 0.25")
-    titulo = str(calendar.month_name[num_primer_mes+2])
-    plt.title(titulo,fontsize = 35)
-    plt.legend(loc='upper left',fontsize='xx-large')
-    plt.ylabel('Solar Power [GW]',fontsize = 35)
-    plt.tick_params(axis='y',labelsize=25)
-    plt.xlabel('Hour of day',fontsize=35)
-    plt.minorticks_off()
-    plt.ylim(bottom = 0,top = max)
-
-    plt.subplot(2,2,4)
-
-    month_4 = Por_mes(country,num_primer_mes+3)
-    plt.plot(x_axis,month_4['Perc. 0.75'],ls='dashdot',label="Perc. 0.75")
-    plt.plot(x_axis,month_4['median'],ls='solid',label="Median")
-    plt.plot(x_axis,month_4['Perc. 0.25'],ls='dashed',label="Perc. 0.25")
-    titulo = str(calendar.month_name[num_primer_mes+3])
-    plt.title(titulo,fontsize = 35)
-    plt.legend(loc='upper left',fontsize='xx-large')
-    plt.ylabel('Solar Power [GW]',fontsize = 35)
-    plt.tick_params(axis='y',labelsize=25)
-    plt.xlabel('Hour of day',fontsize=35)
-    plt.minorticks_off()
-    plt.ylim(bottom = 0,top = max)
-    
-    plt.show()
-
-## Llama a cuatrimestre
-def graficas_cuatrimestre(country):
-    cuatrimestre(1,1,country)
-    cuatrimestre(2,5,country)
-    cuatrimestre(3,9,country)
+    prices = pd.DataFrame.from_dict(prices_germany,orient='index')
+    prices.rename(columns={0:'Prices (Euros/MWh)'},inplace=True)
+    prices['Production [GWh]']= month_germany
+    prices['Sales (Euros)']=prices['Prices (Euros/MWh)']*1000*prices['Production [GWh]']
+    anuales = prices['Sales (Euros)'].sum()
+    prices['Prices (Euros/MWh)']= prices['Prices (Euros/MWh)'].apply(lambda x: "€{:,.2f}".format(x))
+    prices.loc['Annual']=['','',anuales]
+    prices['Sales (Euros)']=np.round(prices['Sales (Euros)'],2)
+    prices['Sales (Euros)']= prices['Sales (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
+    return(prices)
