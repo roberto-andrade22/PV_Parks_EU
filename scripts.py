@@ -16,7 +16,7 @@ dump = [7]
 countries = ["Spain","Germany"]
 years = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017]
 
-## Solar output for one day in one country using dump territories.
+## Solar output for one day in one country using dump territories. (Output in MWh)
 def solar_one_day(country,year,month,day):
     type_of_panel = atlite.solarpanels.CSi
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
@@ -117,15 +117,15 @@ def area_elegible(country, includer=dump):
     cutout.grid.plot(ax=ax, color='None', edgecolor='grey', ls=':')
     ax.set_title(f'{country}\nEligible area (green) {eligible_share * 100:2.2f}%');
 
-## Une csv de la simulación
-def unificar():
+## Will merge output from the code into single csv file
+def unite():
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
     todo = {}
     for year in years:
         for country in paises:
             todo[country+str(year)]=pd.read_csv('Output/'+country+str(year)+'.csv',parse_dates=[0])
             todo[country+str(year)].set_index('time',inplace=True)
-            todo[country+str(year)]=todo[country+str(year)]/1000            ## Convertir a GW
+            todo[country+str(year)]=todo[country+str(year)]/1000            ## Converts to GW
 
     df = pd.concat([todo['Spain2008'],todo['Germany2008']],axis=1)
     for year in years[1:]:
@@ -134,16 +134,16 @@ def unificar():
     df.to_csv('Output/Combinado.csv')
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
 
-## Ejecuta la simulación (Cuidado con número de procesadores)
-def correr_simulacion():
+## Runs Atlite's functions for Spain and Germany from 2008 to 2017 and unifies the output into single csv file (Output in GWh)
+def execute_order_66():
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
-    import multiprocessing
-    from joblib import delayed, Parallel
-    Parallel(n_jobs=multiprocessing.cpu_count()-1)(delayed(solar_year)(country,year) for country in paises for year in years)
-    unificar()
+    for country in countries:
+        for year in years:
+            solar_year(country,year)
+    unite()
 
-## Lee csv único de la simulación. Regresa DF
-def leer():
+## Reads the single csv file and returns a Pandas DataFrame
+def read_single_csv():
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
     df = pd.read_csv('Output/Combinado.csv',parse_dates=[0])
     df = df[(df['time'] < '2018-01-01')]
@@ -152,6 +152,9 @@ def leer():
     os.chdir('/home/roberto/Documents/Titulación/Archivos')
     return (df)
 
+##########################################################################
+
+## Analyzing the output
 
 ## Grafica tres días aleatorios
 def tres_random(pais):
