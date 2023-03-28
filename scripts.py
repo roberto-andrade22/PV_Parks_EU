@@ -10,16 +10,16 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import scipy.stats as stats
-os.chdir('/home/roberto/Documents/Titulación/Archivos')
+os.chdir('../Archivos')
 
 dump = [7]
 countries = ["Spain","Germany"]
 years = [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017]
 
-## Solar output for one day in one country using dump territories. (Output in MWh)
 def solar_one_day(country,year,month,day):
+    """"Solar output for one day in one country using dump territories. (Output in MWh)"""
+
     type_of_panel = atlite.solarpanels.CSi
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
     shapes = world[world.name.isin(countries)].set_index('name')
@@ -45,11 +45,9 @@ def solar_one_day(country,year,month,day):
     df.rename(columns={country:country+'[MWh]'},inplace=True)
     return(df)
 
-
-## Get the output for one country during one year in dump territories
 def solar_year(country,year):
+    """"Get the output for one country during one year in dump territories"""
     type_of_panel = atlite.solarpanels.CSi
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
     shapes = world[world.name.isin(countries)].set_index('name')
@@ -73,9 +71,8 @@ def solar_year(country,year):
                 orientation='latitude_optimal', index=shapes.index)
     pv.to_pandas().to_csv('Output/'+country+str(year)+'.csv')
 
-## Print a map showing the eligible area for solar panels. Default will be for Dump designated territories
 def eligible_area(country,includer = dump):
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    """Print a map showing the eligible area for solar panels. Default will be for Dump designated territories"""
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
     shapes = world[world.name.isin(countries)].set_index('name')
@@ -94,9 +91,8 @@ def eligible_area(country,includer = dump):
     cutout.grid.to_crs(excluder.crs).plot(edgecolor='grey', color='None', ax=ax, ls=':')
     ax.set_title(f'{country}\nEligible area (green) {eligible_share * 100:2.2f}%');
 
-## Print an easier to read map showing the eligible area for solar panels. Default will be for Dump designated territories
 def area_elegible(country, includer=dump):
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    """Print an easier to read map showing the eligible area for solar panels. Default will be for Dump designated territories"""
     world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     countries = [country]
     shapes = world[world.name.isin(countries)].set_index('name')
@@ -117,9 +113,8 @@ def area_elegible(country, includer=dump):
     cutout.grid.plot(ax=ax, color='None', edgecolor='grey', ls=':')
     ax.set_title(f'{country}\nEligible area (green) {eligible_share * 100:2.2f}%');
 
-## Will merge output from the code into single csv file
 def unite():
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    """Will merge output from the code into single csv file"""
     todo = {}
     for year in years:
         for country in countries:
@@ -132,33 +127,28 @@ def unite():
         df_aux = pd.concat([todo['Spain'+str(year)],todo['Germany'+str(year)]],axis=1)
         df = pd.concat([df,df_aux])  
     df.to_csv('Output/Combinado.csv')
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
 
-## Runs Atlite's functions for Spain and Germany from 2008 to 2017 and unifies the output into single csv file (Output in GWh)
 def execute_order_66():
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    """Runs Atlite's functions for Spain and Germany from 2008 to 2017 and unifies the output into single csv file (Output in GWh)"""
     for country in countries:
         for year in years:
             solar_year(country,year)
     unite()
 
-## Reads the single csv file and returns a Pandas DataFrame
 def read_single_csv():
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
+    """Reads the single csv file and returns a Pandas DataFrame"""
     df = pd.read_csv('Output/Combinado.csv',parse_dates=[0])
     df = df[(df['time'] < '2018-01-01')]
     df.set_index('time',inplace=True)
     df.index.drop_duplicates(keep=False)
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
     return (df)
 
 ##########################################################################
 
 ## Analyzing the output
 
-## Plot three random consecutive days of output for one country. 
-## Displays one color for each year of the ten available in our output
 def three_random(country):
+    """Plot three random consecutive days of output for one country. Displays one color for each year of the ten available in our output."""
     df = read_single_csv()
     df['doy'] = df.index.dayofyear
     df['time']=df.index.time
@@ -177,8 +167,8 @@ def three_random(country):
     plt.show()
     plt.close()
 
-## Returns a DataFrame with the total PV production for each year for one country
 def anual_country(country):
+    """Returns a DataFrame with the total PV production for each year for one country"""
     df = read_single_csv()
     pais_1 = df[country]
     total = {}
@@ -189,8 +179,8 @@ def anual_country(country):
     sums.rename(columns={0:title},inplace=True)
     return(sums)
 
-## Returns the total production for each year for one country and one specific month (Dictionary)
 def sum_month(country,month): ## Insert month as integer
+    """Returns the total production for each year for one country and one specific month (Dictionary)"""
     auxiliar = read_single_csv()
     auxiliar['Month']=auxiliar.index.month
     auxiliar['Year']=auxiliar.index.year
@@ -209,8 +199,8 @@ def monthly_average(country):
     monthly = [i/10 for i in monthly]
     return(monthly)
 
-## Boxplot yearly production for each month for one country
 def box_plots_monthly(country):
+    """Boxplot yearly production for each month for one country"""
     dictionary = {}
     for i in range(1,13):
         suma = sum_month(country,i)
@@ -235,26 +225,25 @@ def box_plots_monthly(country):
 
 ## Extracting the economic value of the production (prices)
 
-## Reads the files with Spain's monthly prices (2020). Will be called from the method sales_spain()
 def prices_spain():
-    os.chdir('/home/roberto/Documents/Titulación/Precios España')
+    """Reads the files with Spain's monthly prices (2020). Will be called from the method sales_spain()"""
+    aux_dir = '../Precios España/'
     files = ['PFMMESES_CUR_20200101_20200131.xls','PFMMESES_CUR_20200201_20200229.xls','PFMMESES_CUR_20200301_20200331.xls','PFMMESES_CUR_20200401_20200430.xls',
             'PFMMESES_CUR_20200501_20200531.xls','PFMMESES_CUR_20200601_20200630.xls','PFMMESES_CUR_20200701_20200731.xls','PFMMESES_CUR_20200801_20200831.xls',
             'PFMMESES_CUR_20200901_20200930.xls','PFMMESES_CUR_20201001_20201031.xls','PFMMESES_CUR_20201101_20201130.xls','PFMMESES_CUR_20201201_20201231.xls']
     prices = {}
     aux = 1
     for i in files:
-        prices[aux] = pd.read_excel(i,header=3)['Total\n€/MWh'][0]
+        prices[aux] = pd.read_excel(aux_dir+i,header=3)['Total\n€/MWh'][0]
         aux = aux+1
     prices = pd.DataFrame.from_dict(prices,orient='index')
 
     months = {1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
     prices.rename(index = months,inplace=True,columns={0:'Prices (Euros/MWh)'})
-    os.chdir('/home/roberto/Documents/Titulación/Archivos')
     return(prices)
 
-## Returns DataFrame with expected sales in Spain by month. It considers the mean production for each month times the mean prices for 2020.
 def sales_spain():
+    """Returns DataFrame with expected sales in Spain by month. It considers the mean production for each month times the mean prices for 2020."""
     month_spain = monthly_average('Spain')
     spain = prices_spain()
     spain['Production [GWh]']=month_spain
@@ -266,8 +255,8 @@ def sales_spain():
     spain['Sales (Euros)']= spain['Sales (Euros)'].apply(lambda x: "€{:,.2f}".format(x))
     return(spain)
 
-## Returns DataFrame with expected sales in Germany by month. It considers the mean production for each month times the mean prices for 2020.
 def sales_germany():
+    """Returns DataFrame with expected sales in Germany by month. It considers the mean production for each month times the mean prices for 2020."""
     month_germany = monthly_average('Germany')
     prices_germany = {'January': 49.39,'February':42.82,'March':30.63,'April':39.96,
                 'May':37.84,'June':32.52,'July':39.69,'August':36.85,'September':35.75,'October':36.94,'November':41,'December':31.97}
